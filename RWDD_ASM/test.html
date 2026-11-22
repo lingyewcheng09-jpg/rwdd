@@ -1,0 +1,156 @@
+<!-- <!doctype html>
+<html>
+  <head>
+    <title>Scroll Curve</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #111;
+        color: white;
+      }
+
+      section {
+        height: 100vh;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .scroll-line {
+        position: fixed;
+
+        left: 50%;
+        top: 0;
+
+        width: 500px;
+        height: 100vh;
+
+        transform: translateX(-50%);
+
+        overflow: visible;
+
+        pointer-events: none;
+      }
+
+      #line {
+        fill: none;
+        stroke: #4ade80;
+        stroke-width: 8;
+        stroke-linecap: round;
+      }
+    </style>
+  </head>
+
+  <body>
+    <svg class="scroll-line" viewBox="0 0 500 2000" preserveAspectRatio="none">
+      <path
+        id="line"
+        d="
+          M0 250
+          C50 300, 450 500, 250 800
+          C50 1100, 450 1300, 250 1600
+          C150 1750, 350 1900, 250 2000
+        "
+      />
+    </svg>
+
+    <section>
+      <h1>Section 1</h1>
+    </section>
+
+    <section>
+      <h1>Section 2</h1>
+    </section>
+
+    <section>
+      <h1>Section 3</h1>
+    </section>
+
+    <section>
+      <h1>Section 4</h1>
+    </section>
+
+    <script>
+      const line = document.querySelector("#line");
+
+      const lineLength = line.getTotalLength();
+
+      line.style.strokeDasharray = lineLength;
+      line.style.strokeDashoffset = lineLength;
+
+      window.addEventListener("scroll", () => {
+        // How far the user has scrolled
+        const scrollTop = window.scrollY;
+
+        // Total scrollable distance
+        const documentHeight =
+          document.documentElement.scrollHeight - window.innerHeight;
+
+        // Scroll percentage
+        const scrollProgress = scrollTop / documentHeight;
+
+        // Draw the line according to scroll
+        const drawLength = lineLength * scrollProgress;
+
+        line.style.strokeDashoffset = lineLength - drawLength;
+      });
+    </script>
+  </body>
+</html> -->
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      min-height: 100vh;
+      background: linear-gradient(rgb(244, 245, 244), rgb(172, 232, 172));
+    }
+
+    .orbit {
+      position: absolute;
+      inset: 0;
+      font-size: 4rem; /* sets the 1em used below */
+      transform-origin: 50% calc(100% - 0.5em); /* pivot = bottom center, level with the letter's middle */
+      animation: swing 3s ease-in-out forwards;
+    }
+
+    .letter {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      margin: 0;
+      line-height: 1; /* so the letter is exactly 1em tall */
+      animation: upright 3s ease-in-out forwards;
+    }
+
+    @keyframes swing {
+      to {
+        transform: rotate(-180deg);
+      }
+    } /* counter-clockwise, arcs upward */
+    @keyframes upright {
+      to {
+        transform: rotate(-180deg);
+      }
+    } /* exact opposite, text stays level */
+  </style>
+  <body>
+    <div class="orbit">
+      <p class="letter">Collectors</p>
+    </div>
+  </body>
+</html>

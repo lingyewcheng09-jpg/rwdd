@@ -1,0 +1,231 @@
+/*
+=================================
+* Filename : reviews.js
+* Date : 18/10/2026
+* Author : ivan yong
+* Description : Review submission table and review actions
+=================================
+*/
+
+// =======================
+// the 3 card stat
+// =======================
+
+function getReviewCounts(){
+  return submission.reduce((counts, submission) => {
+    const status = String(submission.status || "").toLowerCase();
+    if (status === "approved") {
+      counts.approved++;
+    } else if (status === "pending"){
+      counts.pending++;
+    } else {
+      counts.rejected++;
+    }
+    return counts
+  }, {approved: 0, pending: 0, rejected: 0});
+}
+
+function renderReviewStat(){
+
+  const counts = getReviewCounts();
+
+  const items = [
+    {label: "Completed", value: counts.approved, sub: "Completed by all the student"},
+    {label: "Pending", value: counts.pending, sub: "Waiting to mark"},
+    {label: "Rejected", value: counts.rejected, sub: "Submission that were not acceptable"}
+  ];
+
+  $("stats").innerHTML = items.map(item => `
+    <div class="card stat">
+      <span class="stat__label">${item.label}</span>
+      <b class="stat__value">${item.value}</b>
+      <span class="stat__sub">${item.sub}</span>
+    </div>
+    `).join("");
+}
+
+// ============================
+// pie chart in review page
+// ===========================
+let pieChart = null;
+function renderReviewPieChart(){
+
+  const counts = getReviewCounts();
+
+  const data = [counts.approved, counts.pending, counts.rejected];
+
+  if (pieChart){
+    pieChart.data.datasets[0].data = data;
+    pieChart.update();
+    return;
+  }
+
+  pieChart = new Chart($("pie_chart"), {
+    type : "pie",
+    data : {
+      labels: ["Approved", "Pending", "Rejected"],
+      datasets: [{data,
+        backgroundColor: ["#0c9260", "#f5a623", "#d64545"]
+      }]
+    },
+    options: {responsive: true, maintainAspectRatio: false}
+  });
+}
+
+// ============================
+// line chart in review page
+// ===========================
+let lineChart = null;
+function renderReivewLineChart() {
+  const labels = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  const counts = labels.map((_, index) =>
+    submission.filter(s => {
+      const date = new Date(String(s.date).replace(" ", "T"));
+      return !Number.isNaN(date.getTime()) && date.getDay() === index + 1;   // Mon = 1
+    }).length
+  );
+
+  if (lineChart) {
+    lineChart.data.datasets[0].data = counts;
+    lineChart.update();
+    return;
+  }
+  lineChart = new Chart($("line_chart"), {
+  type: "line",
+  data: {
+    labels,
+    datasets: [{
+      data: counts,
+      borderColor: "#0c9260",
+      backgroundColor: "rgba(12, 146, 96, 0.12)",
+      fill: true,
+      tension: 0.35,
+      pointRadius: 3,                       // small dots always visible
+      pointHoverRadius: 6,                  // grows when hovered
+      pointBackgroundColor: "#0c9260",
+      pointHoverBorderColor: "#fff",
+      pointHoverBorderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: "index", intersect: false },   // ← the important part
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: "#1f2a24",
+        padding: 10,
+        cornerRadius: 8,
+        displayColors: false,
+        callbacks: {
+          label: item => item.parsed.y + " submissions"   // text shown in the hover box
+        }
+      }
+    },
+    scales: {
+      y: { beginAtZero: true, ticks: { stepSize: 1 } }    // whole numbers only
+    }
+  }
+});
+}
+
+// ==================================
+// Table Submmision
+// ================================
+
+const dialog = $("submissionDialog");
+const tbody  = $("submissionBody");
+let current = null;                       // the submission being viewed
+
+// 1. draw the table rows
+function renderReviewTable() {
+  tbody.innerHTML = submission.map(s => `
+    <tr>
+      <td>${s.id}</td>
+      <td>${s.challenge}</td>
+      <td>${s.user}</td>
+      <td>${s.status}</td>
+      <td><button class="btn" data-view="${s.id}">View</button></td>
+    </tr>`).join("");
+}
+
+// 2. open the dialog and fill it
+function openDialog(id) {
+  current = submission.find(s => s.id === Number(id));
+  if (!current) return;
+
+  $("dId").textContent = "#" + current.id;
+  $("dChallenge").textContent = current.challenge;
+  $("dUser").textContent = current.user;
+  $("dPoints").textContent = current.points;
+  $("dDate").textContent = current.date;
+  $("dStatus").textContent = current.status;
+  $("dNote").value = "";
+
+  const img = $("dPhoto");
+  img.src = current.photo;
+  img.hidden = !current.photo;            // hide if there is no photo
+
+  // only pending submissions can be approved or rejected
+  const canReview = current.status === "pending";
+  $("dApprove").hidden = !canReview;
+  $("dReject").hidden = !canReview;
+
+  dialog.showModal();                     // this opens it
+}
+
+tbody.addEventListener("click", event => {
+  const button = event.target.closest("[data-view]");
+  if (button) openDialog(button.dataset.view);
+});
+
+$("dialogClose").onclick = () => dialog.close();
+
+
+$("dApprove").onclick = () => {
+  current.status = "approved";            // later: call the backend instead
+  dialog.close();
+  renderTable();
+};
+
+$("dReject").onclick = () => {
+  current.status = "rejected";
+  current.note = $("dNote").value;
+  dialog.close();
+  renderTable();
+};
+
+// =================================
+// Start
+// =================================
+
+function refreshReview(){
+  renderReviewStat();
+  renderReviewPieChart();
+  renderReivewLineChart();
+  renderReviewTable();
+}
+
+let submission = [];
+let stats = [];
+
+async function initializeReviewPage() {
+  submission = await getSubmissions();
+  refreshReview();
+}
+
+$("dApprove").onclick = () => {
+  current.status = "approved";
+  dialog.close();
+  refreshReview();
+}
+
+$("dReject").onclick = () => {
+  current.status = "rejected";
+  dialog.close();
+  refreshReview();
+}
+
+
+initializeReviewPage();
