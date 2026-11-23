@@ -84,7 +84,7 @@ switch ($method) {
         $image = saveImage("image", $imageFolder, $imagePath);
 
         if ($image === false) {
-            goBack("../../../frontend/admin/challenges.php?invaid_image");
+            goBack("../../../frontend/admin/challenges.php?error=invalid_image");
         }
 
         $existingChallenge = $controllers->getChallengeId($id);
@@ -106,15 +106,15 @@ switch ($method) {
             (int)$_POST["xp_reward"],
             $_POST["deadline"],
             $_POST["location"],
-            (int)$_SESSION["created_by"],
+            (int)$existingChallenge["created_by"],
             $image
         );
 
         $result = $controllers->updateChallenge($id, $challenge);
         if ($result === false) {
-            goBack("../../../frontend/admin/challenge.php?error=update_failed");
+            goBack("../../../frontend/admin/challenges.php?error=update_failed");
         } else {
-            goBack("../../../frontend/admin/challenge.php?success=updated");
+            goBack("../../../frontend/admin/challenges.php?success=updated");
         }
 
         exit;

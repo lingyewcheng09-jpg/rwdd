@@ -213,7 +213,7 @@ class DashboardController
     {
         // Challenges that have not ended yet, plus the ones this user has already tried
         $challenges = $this->fetchAll(
-            "SELECT challenge_id, title, description, category, points_reward, xp_reward, time_limit_hours, image
+            "SELECT challenge_id, title, description, category, points_reward, xp_reward, image
              FROM challenges
              WHERE deadline > NOW() OR challenge_id IN (SELECT challenges_id FROM submissions WHERE user_id = ?)
              ORDER BY challenge_id DESC",
@@ -255,7 +255,6 @@ class DashboardController
                 "points"           => (int) $c["points_reward"],
                 "xp"               => (int) $c["xp_reward"],
                 "image"            => $c["image"],
-                "time_limit_hours" => (int) $c["time_limit_hours"],
                 "status"           => $attempt["status"],
                 "deadline"         => $attempt["deadline"],           // the user must upload the photo before this
                 "note"             => $attempt["note"],               // the reason when the photo was rejected
@@ -283,10 +282,10 @@ class DashboardController
             throw new ApiException("You already joined this challenge", 409);
         }
 
-        // The time is the challenge's time limit, but never later than the challenge's own deadline
+        // The time limit is the challenge's own deadline: the photo must be uploaded before it
         $this->run(
             "INSERT INTO challenge_joins (user_id, challenge_id, deadline_at)
-             SELECT ?, challenge_id, LEAST(NOW() + INTERVAL time_limit_hours HOUR, deadline)
+             SELECT ?, challenge_id, deadline
              FROM challenges WHERE challenge_id = ?",
             "ii", [$userId, $challengeId]
         );

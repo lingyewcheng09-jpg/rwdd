@@ -25,7 +25,7 @@ const ENDPOINTS = {
     history: "user/history.php",
     badges: "user/badges.php",
     rewards: "user/rewards.php",
-    redeem: "user/redeem.php",
+    redeem: "user/rewards.php",
     leaderboard: "user/leaderboard.php"
 };
 
