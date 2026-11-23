@@ -10,12 +10,12 @@
 /* ---------- 1. BACKEND CONNECTION ---------- */
 
 // Same address as API_BASE in frontend/auth/index.js
-const API_BASE = "http://127.0.0.1:8000/backend/api";
+const API_BASE = "http://localhost/web/RWDD_ASM/project/backend/api";
 
 // true  = use the temporary data in sample-data.js (no backend needed, good for designing)
 // false = ask the PHP backend for the data
 // >>> Set this to false when the backend and database are connected. <<<
-const USE_SAMPLE_DATA = true;
+const USE_SAMPLE_DATA = false;
 
 // The PHP file used for each action (inside API_BASE). Change the names to match the backend.
 const ENDPOINTS = {

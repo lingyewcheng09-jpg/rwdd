@@ -1,4 +1,7 @@
+
 <?php
+
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 $db_server = "localhost";
 $db_user = "root";
@@ -12,7 +15,9 @@ try {
         $db_pass,
         $db_name
     );
+
     mysqli_set_charset($conn, "utf8mb4");
+
 } catch (mysqli_sql_exception $e) {
     die("Could not connect: " . $e->getMessage());
 }
