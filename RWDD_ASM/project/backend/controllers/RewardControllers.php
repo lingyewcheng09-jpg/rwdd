@@ -1,12 +1,12 @@
 <?php
 // =================================
-// * Filename : AchievementControllers.php
-// * Date : 16/10/2026
+// * Filename : RewardControllers.php
+// * Date : 23/11/2026
 // * Author : Ivan Yong
-// * Description : For delete, login, get all list of users, and upate user
+// * Description : For create, get, update and delete rewards
 // =================================
 
-require_once __DIR__ . "/../model/Rewards.php";
+require_once __DIR__ . '/../model/Rewards.php';
 
 class RewardControllers
 {
@@ -17,16 +17,17 @@ class RewardControllers
         $this->conn = $conn;
     }
 
+    // Create
     public function createReward(Rewards $reward)
     {
-        $reward_item = $reward->getRewardItem();
+        $name        = $reward->getName();
         $description = $reward->getDescription();
         $points_cost = $reward->getPointsCost();
-        $stock = $reward->getStock();
-        $image = $reward->getImage();
+        $stock       = $reward->getStock();
+        $image       = $reward->getImage();
 
-        $stmt = mysqli_prepare($this->conn, "INSERT INTO rewards(reward_item, description, points_cost, stock, image) value (?,?,?,?,?)");
-        mysqli_stmt_bind_param($stmt, "ssiis", $reward_item, $description, $points_cost, $stock, $image);
+        $stmt = mysqli_prepare($this->conn, "INSERT INTO rewards(name, description, points_cost, stock, image) VALUES (?,?,?,?,?)");
+        mysqli_stmt_bind_param($stmt, "ssiis", $name, $description, $points_cost, $stock, $image);
 
         if (!mysqli_stmt_execute($stmt)) {
             return false;
@@ -37,13 +38,13 @@ class RewardControllers
 
     public function getAllReward()
     {
-        $result = mysqli_query($this->conn, "SELECT reward_id, reward_item, description, points_cost, stock, image FROM rewards");
+        $result = mysqli_query($this->conn, "SELECT reward_id, name, description, points_cost, stock, image FROM rewards");
         return mysqli_fetch_all($result, MYSQLI_ASSOC);
     }
 
     public function getRewardId(int $reward_id)
     {
-        $stmt = mysqli_prepare($this->conn, "SELECT reward_id, reward_item, description, points_cost, stock, image FROM rewards WHERE reward_id = ?");
+        $stmt = mysqli_prepare($this->conn, "SELECT reward_id, name, description, points_cost, stock, image FROM rewards WHERE reward_id = ?");
         mysqli_stmt_bind_param($stmt, "i", $reward_id);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
@@ -52,17 +53,20 @@ class RewardControllers
 
     public function updateReward(int $reward_id, Rewards $reward)
     {
-        $reward_item = $reward->getRewardItem();
+        $name        = $reward->getName();
         $description = $reward->getDescription();
         $points_cost = $reward->getPointsCost();
-        $stock = $reward->getStock();
-        $image = $reward->getImage();
+        $stock       = $reward->getStock();
+        $image       = $reward->getImage();
 
         $stmt = mysqli_prepare(
             $this->conn,
-            "UPDATE rewards SET reward_item = ?, description = ?, points_cost = ?, stock = ?, image = ? WHERE reward_id = ?"
+            "UPDATE rewards
+            SET name = ?, description = ?, points_cost = ?,
+                stock = ?, image = ?
+          WHERE reward_id = ?"
         );
-        mysqli_stmt_bind_param($stmt, "ssiisi", $reward_item, $description, $points_cost, $stock, $image, $reward_id);
+        mysqli_stmt_bind_param($stmt, "ssiisi", $name, $description, $points_cost, $stock, $image, $reward_id);
 
         return mysqli_stmt_execute($stmt);
     }
